@@ -8,7 +8,6 @@ class Scanner:
         self.alert_system = AlertSystem()
         self.findings = []
         self.critical_contexts = [] # ex: Production, Public, etc.
-        self.alert_system.configure("admin@local")
     
     def set_strategy(self, strategy):
         self.strategy = strategy
@@ -38,9 +37,20 @@ class Scanner:
             self.alert_system.send_alert(final_vuln)
 
     def get_stats(self):
+        
+        # Calcul des totaux par sévérité (inchangé)
+        critical = sum(1 for v in self.findings if v.get_severity() >= 90)
+        high = sum(1 for v in self.findings if 70 <= v.get_severity() < 90)
+        medium = sum(1 for v in self.findings if 50 <= v.get_severity() < 70)
+        
+        # --- CALCUL MANQUANT : Dette Technique (TODO) ---
+        # On suppose que seuls les titres contenant "Dette Technique" sont des TODO
+        technical_debt = sum(1 for v in self.findings if "Dette Technique" in v.get_title())
+        
         return {
             'count': len(self.findings),
-            'critical': sum(1 for v in self.findings if v.get_severity() >= 90),
-            'high': sum(1 for v in self.findings if 70 <= v.get_severity() < 90),
-            'medium': sum(1 for v in self.findings if 50 <= v.get_severity() < 70)
+            'critical': critical,
+            'high': high,
+            'medium': medium,
+            'todo': technical_debt # L'élément qui alimente le compteur "TECH. DETTE"
         }
