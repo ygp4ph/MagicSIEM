@@ -1,29 +1,50 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-
-# Virtual Environment
+# ----------------------------------------------------
+# 1. Environnement Virtuel Python (obligatoire)
+# ----------------------------------------------------
 venv/
-env/
-ENV/
+.venv/
+*/venv/
 
-# Logs
+# ----------------------------------------------------
+# 2. Fichiers et Dossiers générés par Python
+# ----------------------------------------------------
+# Fichiers Bytecode
+__pycache__/
+*.pyc
+
+# Builds
+dist/
+build/
+*.egg-info/
+
+# ----------------------------------------------------
+# 3. Fichiers et Dossiers de Log/Résultats/Temporaires
+# ----------------------------------------------------
+# Fichiers de log/résultats de scan
 *.log
-scan_*.log
+*.sqlite
+*.db
 
-# IDE
-.vscode/
+# Fichiers d'environnement local pour secrets (s'ils existent)
+.env
+.flaskenv
+
+# ----------------------------------------------------
+# 4. Fichiers générés par l'IDE (ex: VS Code, PyCharm)
+# ----------------------------------------------------
 .idea/
+.vscode/
 *.swp
-*.swo
 *~
 
-# OS
-.DS_Store
-Thumbs.db
+# ----------------------------------------------------
+# 5. Fichiers Spécifiques à votre structure
+# ----------------------------------------------------
+# Dossier des tests si les résultats des tests y sont stockés
+tests/__pycache__/
 
-# Project specific
-test_data/__pycache__/
+# Dossier d'un projet de test généré ou temporaire
+# test_data/  # Si 'test_data' ne contient que des fichiers de test jetables
+
+# Fichiers de présentation/documentation s'ils sont volumineux ou non cruciaux pour le code
+# GUIDE_PRESENTATION.md # Décommenter si vous ne voulez pas le versionner
