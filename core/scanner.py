@@ -1,50 +1,78 @@
-from typing import List
-from strategies.base import IScanStrategy
+import logging
 from core.alert_system import AlertSystem
-from vulnerabilities.base import Vulnerability
 from vulnerabilities.decorators import CriticalContextDecorator
 
-class PDF:
-    def __init__(self, content):
-        self.content = content
-    
-    def __str__(self):
-        return f"\n[Rapport PDF Généré] : {self.content}"
+logger = logging.getLogger(__name__)
 
 class Scanner:
+    
     def __init__(self):
-        self.strategy: IScanStrategy = None
+        self.strategy = None
         self.alert_system = AlertSystem()
-        self.findings: List[Vulnerability] = []
-        self.critical_contexts: List[str] = []
+        self.findings = []
+        self.critical_contexts = []
         
-        self.alert_system.configure("admin@default.com")
-
-    def set_strategy(self, strategy: IScanStrategy):
+        self.alert_system.configure("admin@company.com")
+        logger.info("Scanner initialise")
+    
+    def set_strategy(self, strategy):
         self.strategy = strategy
-
-    def add_critical_context(self, context: str):
+        logger.info(f"Strategie definie: {strategy.__class__.__name__}")
+    
+    def add_critical_context(self, context):
         self.critical_contexts.append(context)
-
+        logger.info(f"Contexte critique ajoute: {context}")
+    
     def run_scan(self):
         if not self.strategy:
+            logger.error("Aucune strategie definie")
             return
         
+        logger.info("Debut du scan")
         raw_findings = self.strategy.scan()
         
-        for v in raw_findings:
-            final_vuln = v
+        for vuln in raw_findings:
+            final_vuln = vuln
+            
             for context in self.critical_contexts:
                 final_vuln = CriticalContextDecorator(final_vuln, context)
             
             self.findings.append(final_vuln)
             self.alert_system.send_alert(final_vuln)
-
-    def generate_report(self) -> PDF:
+        
+        logger.info(f"Scan termine: {len(self.findings)} vulnerabilites stockees")
+    
+    def generate_report(self):
         total_risk = sum(v.get_severity() for v in self.findings)
-        report_content = (
-            f"Analyse terminée.\n"
-            f"   - Vulnérabilités trouvées : {len(self.findings)}\n"
-            f"   - Score de risque total : {total_risk}"
-        )
-        return PDF(report_content)
+        
+        critical = sum(1 for v in self.findings if v.get_severity() >= 90)
+        high = sum(1 for v in self.findings if 70 <= v.get_severity() < 90)
+        medium = sum(1 for v in self.findings if 50 <= v.get_severity() < 70)
+        low = sum(1 for v in self.findings if v.get_severity() < 50)
+        
+        report = f"""
+RAPPORT DE SECURITE
+===================
+
+Vulnerabilites trouvees: {len(self.findings)}
+Score de risque total: {total_risk}
+
+Distribution:
+  - Critiques (90+): {critical}
+  - Hautes (70-89): {high}
+  - Moyennes (50-69): {medium}
+  - Basses (<50): {low}
+
+Alertes envoyees: {self.alert_system.get_alert_count()}
+"""
+        logger.info("Rapport genere")
+        return report
+    
+    def get_summary(self):
+        return {
+            'total': len(self.findings),
+            'critical': sum(1 for v in self.findings if v.get_severity() >= 90),
+            'high': sum(1 for v in self.findings if 70 <= v.get_severity() < 90),
+            'medium': sum(1 for v in self.findings if 50 <= v.get_severity() < 70),
+            'low': sum(1 for v in self.findings if v.get_severity() < 50)
+        }
