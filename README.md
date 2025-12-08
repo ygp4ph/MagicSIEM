@@ -78,7 +78,7 @@ Flask (main.py)
 
 ```bash
 # Cloner le projet
-git clone https://github.com/ton-username/MagicSIEM.git
+git clone git@github.com:ygp4ph/MagicSIEM.git
 cd MagicSIEM
 
 # Environnement virtuel
