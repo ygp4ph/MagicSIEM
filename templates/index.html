@@ -1,79 +1,399 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>SIEM MONITOR - LIVE</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIEM Dashboard - Security Monitoring</title>
     <style>
-        body { background-color: #1a1a1a; color: #e0e0e0; font-family: monospace; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00ff00; padding-bottom: 10px; }
-        .btn { background: #00ff00; color: black; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 4px; cursor: pointer; border:none;}
-        .btn-danger { background: #ff3333; color: white; }
-        
-        /* Zone de Config */
-        .config-panel { background: #2d2d2d; padding: 15px; margin-top: 20px; border-radius: 5px; display: flex; align-items: center; gap: 15px; border-left: 5px solid #00ff00; }
-        input[type="text"] { padding: 8px; border-radius: 4px; border: none; width: 300px; }
-        
-        .cards { display: flex; gap: 20px; margin-top: 20px; }
-        .card { background: #2d2d2d; padding: 20px; flex: 1; text-align: center; border-radius: 5px; }
-        .card h2 { margin: 0; font-size: 3em; }
-        
-        .logs-panel { margin-top: 20px; background: #000; padding: 15px; border: 1px solid #333; height: 400px; overflow-y: scroll; }
-        .log-item { padding: 10px; border-bottom: 1px solid #333; cursor: pointer; transition: background 0.2s; }
-        .log-item:hover { background-color: #111; }
-        .log-details { display: none; margin-top: 10px; padding: 10px; background: #222; border-left: 3px solid #00ff00; color: #ccc; }
-        
-        .sev-high { color: #ff3333; border-left: 4px solid #ff3333; }
-        .sev-med { color: #ffcc00; border-left: 4px solid #ffcc00; }
-        .sev-low { color: #00ccff; border-left: 4px solid #00ccff; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f1f3f 0%, #1a2d5c 100%);
+            color: #e0e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #a8ff00;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #a8ff00;
+            letter-spacing: 1px;
+        }
+
+        /* Button Styles */
+        .btn {
+            background: linear-gradient(135deg, #a8ff00 0%, #8fe600 100%);
+            color: #0f1f3f;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(168, 255, 0, 0.2);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(168, 255, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 6px 16px rgba(255, 68, 68, 0.3);
+        }
+
+        /* Config Panel */
+        .config-panel {
+            background: rgba(26, 45, 92, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            margin-bottom: 40px;
+            border-radius: 12px;
+            border: 1px solid rgba(168, 255, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .config-panel h3 {
+            color: #a8ff00;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"] {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: 1px solid #a8ff00;
+            background: rgba(15, 31, 63, 0.5);
+            color: #e0e8f0;
+            font-size: 14px;
+            width: 300px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            background: rgba(15, 31, 63, 0.8);
+            border-color: #a8ff00;
+            box-shadow: 0 0 12px rgba(168, 255, 0, 0.15);
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(224, 232, 240, 0.5);
+        }
+
+        .config-spacer {
+            flex-grow: 1;
+        }
+
+        #statusText {
+            font-weight: 600;
+            font-size: 14px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            background: rgba(168, 255, 0, 0.1);
+            color: #a8ff00;
+        }
+
+        #statusText.inactive {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(26, 45, 92, 0.9) 0%, rgba(15, 31, 63, 0.9) 100%);
+            border: 1px solid rgba(168, 255, 0, 0.2);
+            border-radius: 12px;
+            padding: 28px;
+            text-align: center;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-card:hover {
+            border-color: #a8ff00;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(168, 255, 0, 0.15);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            color: rgba(224, 232, 240, 0.7);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #a8ff00;
+        }
+
+        .stat-card.critical h3 {
+            color: #ff4444;
+        }
+
+        .stat-card.critical .value {
+            color: #ff4444;
+        }
+
+        .stat-card.high h3 {
+            color: #ffaa00;
+        }
+
+        .stat-card.high .value {
+            color: #ffaa00;
+        }
+
+        /* Logs Section */
+        .logs-section {
+            margin-bottom: 40px;
+        }
+
+        .logs-section h2 {
+            font-size: 18px;
+            color: #a8ff00;
+            font-weight: 600;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
+        }
+
+        .logs-panel {
+            background: rgba(15, 31, 63, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(168, 255, 0, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        /* Scrollbar */
+        .logs-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .logs-panel::-webkit-scrollbar-track {
+            background: rgba(26, 45, 92, 0.5);
+            border-radius: 4px;
+        }
+
+        .logs-panel::-webkit-scrollbar-thumb {
+            background: #a8ff00;
+            border-radius: 4px;
+        }
+
+        .logs-panel::-webkit-scrollbar-thumb:hover {
+            background: #8fe600;
+        }
+
+        /* Log Items */
+        .log-item {
+            padding: 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(168, 255, 0, 0.05);
+            border-left: 4px solid transparent;
+        }
+
+        .log-item:hover {
+            background: rgba(168, 255, 0, 0.1);
+        }
+
+        .log-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-item-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #e0e8f0;
+        }
+
+        .log-item-severity {
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* Severity Colors */
+        .log-item.sev-high {
+            border-left-color: #ff4444;
+        }
+
+        .log-item.sev-high .log-item-severity {
+            background: rgba(255, 68, 68, 0.2);
+            color: #ff4444;
+        }
+
+        .log-item.sev-med {
+            border-left-color: #ffaa00;
+        }
+
+        .log-item.sev-med .log-item-severity {
+            background: rgba(255, 170, 0, 0.2);
+            color: #ffaa00;
+        }
+
+        .log-item.sev-low {
+            border-left-color: #00ccff;
+        }
+
+        .log-item.sev-low .log-item-severity {
+            background: rgba(0, 204, 255, 0.2);
+            color: #00ccff;
+        }
+
+        .log-details {
+            display: none;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(168, 255, 0, 0.1);
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .log-details p {
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 8px;
+            color: rgba(224, 232, 240, 0.8);
+        }
+
+        .log-details p:last-child {
+            margin-bottom: 0;
+        }
+
+        .log-detail-label {
+            color: #a8ff00;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(224, 232, 240, 0.5);
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>SECURITY OPERATIONS CENTER</h1>
+            <a href="/download/pdf" class="btn">DOWNLOAD REPORT</a>
+        </div>
 
-    <div class="header">
-        <h1>🛡️ MINI-SIEM DASHBOARD</h1>
-        <a href="/download/pdf" class="btn">TÉLÉCHARGER RAPPORT PDF</a>
+        <!-- Configuration Panel -->
+        <div class="config-panel">
+            <h3>CONFIGURATION</h3>
+            <input type="text" id="dirInput" placeholder="Enter directory path (ex: ./test_data)">
+            <button onclick="changeDir()" class="btn">CHANGE TARGET</button>
+            <div class="config-spacer"></div>
+            <span id="statusText">ACTIVE</span>
+            <button id="toggleBtn" onclick="toggleScan()" class="btn btn-danger">PAUSE</button>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Events</h3>
+                <div class="value" id="total">0</div>
+            </div>
+            <div class="stat-card critical">
+                <h3>Critical</h3>
+                <div class="value" id="critical">0</div>
+            </div>
+            <div class="stat-card high">
+                <h3>High Priority</h3>
+                <div class="value" id="high">0</div>
+            </div>
+        </div>
+
+        <!-- Logs Section -->
+        <div class="logs-section">
+            <h2>REAL-TIME SECURITY LOGS</h2>
+            <div class="logs-panel" id="logs">
+                <div class="empty-state">No logs available</div>
+            </div>
+        </div>
     </div>
 
-    <div class="config-panel">
-        <h3>⚙️ CONFIGURATION :</h3>
-        
-        <input type="text" id="dirInput" placeholder="Chemin du dossier (ex: ./test_data)">
-        <button onclick="changeDir()" class="btn">Changer Cible</button>
-        
-        <div style="flex-grow: 1;"></div>
-        
-        <span id="statusText" style="font-weight: bold; margin-right: 10px;">ACTIF</span>
-        <button id="toggleBtn" onclick="toggleScan()" class="btn">PAUSE</button>
-    </div>
-
-    <div class="cards">
-        <div class="card">
-            <h3>TOTAL</h3>
-            <h2 id="total">0</h2>
-        </div>
-        <div class="card">
-            <h3 style="color:red">CRITIQUE</h3>
-            <h2 id="critical">0</h2>
-        </div>
-        <div class="card">
-            <h3 style="color:orange">HAUTE</h3>
-            <h2 id="high">0</h2>
-        </div>
-    </div>
-
-    <h3>🔴 LOGS EN TEMPS RÉEL</h3>
-    <div class="logs-panel" id="logs"></div>
-
-<script>
-        // Variable pour stocker l'état précédent des logs
+    <script>
         let lastLogsHash = "";
 
-        // Gestion des details (accordeon)
         function toggleDetails(id) {
-            var el = document.getElementById('detail-' + id);
-            el.style.display = (el.style.display === "block") ? "none" : "block";
+            const el = document.getElementById('detail-' + id);
+            if (el) {
+                el.style.display = (el.style.display === "block") ? "none" : "block";
+            }
         }
 
-        // Changement de repertoire
         function changeDir() {
             const path = document.getElementById('dirInput').value;
             fetch('/api/config/dir', {
@@ -84,14 +404,13 @@
             .then(r => r.json())
             .then(d => {
                 if (d.status === "error") {
-                    alert("⛔ " + (d.message || "Erreur inconnue"));
+                    alert("Error: " + (d.message || "Unknown error"));
                 } else {
-                    alert("✅ Cible modifiée : " + d.path);
+                    alert("Success: Target changed to " + d.path);
                 }
             });
         }
 
-        // Pause / Reprise
         function toggleScan() {
             fetch('/api/config/toggle', {method: 'POST'})
                 .then(r => r.json())
@@ -102,59 +421,57 @@
             const btn = document.getElementById('toggleBtn');
             const txt = document.getElementById('statusText');
             if (isActive) {
-                btn.innerText = "METTRE EN PAUSE";
+                btn.innerText = "PAUSE";
                 btn.className = "btn btn-danger";
-                txt.innerText = "🟢 SCAN EN COURS";
-                txt.style.color = "#00ff00";
+                txt.innerText = "ACTIVE";
+                txt.classList.remove('inactive');
             } else {
-                btn.innerText = "REPRENDRE";
+                btn.innerText = "RESUME";
                 btn.className = "btn";
-                txt.innerText = "🔴 SCAN ARRÊTÉ";
-                txt.style.color = "red";
+                txt.innerText = "PAUSED";
+                txt.classList.add('inactive');
             }
         }
 
         function updateDashboard() {
-            // 1. Logs et Stats
             fetch('/api/data').then(r => r.json()).then(data => {
-                // Mise à jour des compteurs (toujours faire ça)
                 document.getElementById('total').innerText = data.stats.count;
                 document.getElementById('critical').innerText = data.stats.critical;
                 document.getElementById('high').innerText = data.stats.high;
 
-                // --- CORRECTION ICI ---
-                // On transforme les logs en chaîne de caractères pour comparer
                 const currentLogsHash = JSON.stringify(data.logs);
 
-                // Si les données n'ont pas changé depuis la dernière fois, on NE TOUCHE PAS au HTML
-                // Cela évite de refermer les accordéons que vous êtes en train de lire
                 if (currentLogsHash === lastLogsHash) {
-                    return; 
+                    return;
                 }
 
-                // Si c'est différent, on met à jour la mémoire et le HTML
                 lastLogsHash = currentLogsHash;
 
                 const logsDiv = document.getElementById('logs');
+                
+                if (!data.logs || data.logs.length === 0) {
+                    logsDiv.innerHTML = '<div class="empty-state">No logs available</div>';
+                    return;
+                }
+
                 let html = "";
                 data.logs.reverse().forEach((log, index) => {
-                    let color = log.sev >= 90 ? 'sev-high' : (log.sev >= 50 ? 'sev-med' : 'sev-low');
+                    let severityClass = log.sev >= 90 ? 'sev-high' : (log.sev >= 50 ? 'sev-med' : 'sev-low');
                     html += `
-                    <div class="log-item ${color}" onclick="toggleDetails(${index})">
-                        <div style="display:flex; justify-content:space-between;">
-                            <span>${log.title}</span>
-                            <strong>${log.sev}</strong>
+                    <div class="log-item ${severityClass}" onclick="toggleDetails(${index})">
+                        <div class="log-item-header">
+                            <span class="log-item-title">${log.title}</span>
+                            <span class="log-item-severity">${log.sev}</span>
                         </div>
                         <div id="detail-${index}" class="log-details">
-                            <p>❌ ${log.detail}</p>
-                            <p>✅ ${log.sol}</p>
+                            <p><span class="log-detail-label">Issue:</span>${log.detail}</p>
+                            <p><span class="log-detail-label">Solution:</span>${log.sol}</p>
                         </div>
                     </div>`;
                 });
                 logsDiv.innerHTML = html;
             });
 
-            // 2. Config status
             fetch('/api/status').then(r => r.json()).then(data => {
                 if (document.activeElement.id !== "dirInput") {
                     document.getElementById('dirInput').value = data.directory;

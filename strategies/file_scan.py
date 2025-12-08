@@ -11,7 +11,7 @@ class FileScan(IScanStrategy):
     
     def scan(self):
         findings = []
-        patterns = ['password', 'api_key', 'eval(', 'TODO']
+        patterns = ['password', 'api_key', 'eval(', 'sqli', 'xss', 'http', 'debug', 'TODO']
         
         if not os.path.exists(self.root_dir):
             return []

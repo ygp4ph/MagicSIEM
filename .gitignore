@@ -27,8 +27,6 @@ build/
 # ----------------------------------------------------
 # Fichiers de log/résultats de scan
 *.log
-*.sqlite
-*.db
 
 # Fichiers d'environnement local pour secrets
 .env
@@ -42,9 +40,4 @@ build/
 *.swp
 *~
 
-# ----------------------------------------------------
-# 5. Fichiers Spécifiques
-# ----------------------------------------------------
-# Dossier d'un projet de test généré ou temporaire
-# Si test_data ne contient que des fichiers de test jetables, vous pouvez l'ignorer
-# test_data/
+test_data/

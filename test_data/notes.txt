@@ -1,2 +1,0 @@
-TODO: Refactor this function later
-TODO: Update documentation
