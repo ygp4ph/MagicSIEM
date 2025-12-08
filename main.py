@@ -5,7 +5,6 @@ import threading
 from flask import Flask, render_template, jsonify, make_response, request
 from fpdf import FPDF
 from concurrent.futures import ThreadPoolExecutor
-
 from core.scanner import Scanner
 from strategies.file_scan import FileScan
 from vulnerabilities.vulnerability import BasicVulnerability
@@ -72,37 +71,48 @@ monitor_thread.start()
 
 
 # --- TÂCHE : SCAN MANUEL (ASYNC) ---
-def execute_manual_scan(target_dir):
-    """Fonction exécutée par le ThreadPool pour le scan manuel."""
+def execute_manual_scan(target_input):
     global SCAN_STATUS
     try:
-        if not os.path.exists(target_dir):
-            SCANNER.reset()
+        SCANNER.reset()
+        
+        # DÉTECTION INTELLIGENTE : IP vs DOSSIER
+        # Regex simple pour IPv4
+        ip_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+        
+        if ip_pattern.match(target_input) or target_input == "localhost":
+            # --- MODE RÉSEAU ---
+            print(f"--- [RESEAU] Scan démarré sur l'IP {target_input} ---")
+            SCANNER.set_strategy(NetworkScan(target_input))
+            # On n'ajoute PAS le contexte 'Production' pour le réseau, ou alors un autre contexte
+            SCANNER.add_critical_context("Infrastructure") 
+
+        elif os.path.exists(target_input) and os.path.isabs(target_input):
+            # --- MODE FICHIER ---
+            print(f"--- [FICHIER] Scan démarré sur le dossier {target_input} ---")
+            SCANNER.set_strategy(FileScan(target_input, [".py", ".txt", ".md", ".js", ".php"]))
+            SCANNER.add_critical_context("Production")
+            
+        else:
+            # ERREUR
             sys_alert = BasicVulnerability(
-                f"ERREUR CRITIQUE: Dossier introuvable", 
+                f"Cible invalide", 
                 100,
-                detail=f"Le chemin {target_dir} n'est pas accessible.",
-                solution="Vérifiez le chemin absolu."
+                detail=f"La cible '{target_input}' n'est ni une IP valide, ni un dossier absolu existant.",
+                solution="Vérifiez la saisie."
             )
             SCANNER.findings.append(sys_alert)
             SCAN_STATUS = "error"
             return
-            
-        # Configuration et lancement
-        SCANNER.reset()
-        SCANNER.set_strategy(FileScan(target_dir, [".py", ".txt", ".md", ".js", ".php"]))
-        SCANNER.add_critical_context("Production") 
-        
-        print(f"--- [MANUEL] Scan démarré sur {target_dir} ---")
+
+        # Lancement commun
         SCANNER.run_scan()
-        print("--- [MANUEL] Scan terminé ---")
-        
+        print("--- [SCAN] Analyse terminée ---")
         SCAN_STATUS = "idle"
 
     except Exception as e:
         SCAN_STATUS = "error"
-        logging.error(f"Erreur scan manuel: {e}")
-
+        logging.error(f"Erreur scan: {e}")
 
 # --- ROUTES FLASK ---
 
