@@ -1,10 +1,8 @@
 # MagicSIEM
 
-Un outil d'analyse statique de code pour détecter des vulnérabilités basiques. Projet réalisé dans le cadre de ma formation B2 en cybersécurité à Ynov Bordeaux.
+Un outil d'analyse statique de code pour détecter des vulnérabilités basiques.
 
-## C'est quoi ce projet ?
-
-MagicSIEM scanne des répertoires à la recherche de patterns suspects dans le code source (mots de passe en clair, fonctions dangereuses, etc.). Rien de révolutionnaire, c'est surtout un exercice pour mettre en pratique les design patterns orientés objet qu'on a vus en cours.
+MagicSIEM scanne des répertoires à la recherche de patterns suspects dans le code source (mots de passe en clair, fonctions dangereuses, etc.).
 
 Le projet comprend :
 - Un scanner de fichiers qui cherche des mots-clés dangereux
@@ -12,7 +10,7 @@ Le projet comprend :
 - Un mode surveillance qui tourne en arrière-plan
 - L'export des résultats en PDF
 
-## Ce que ça fait (et ce que ça fait pas)
+## Ce que ça fait (et ce que ça ne fait pas)
 
 **Ce que ça détecte :**
 - Mots de passe en dur dans le code
@@ -25,18 +23,12 @@ Le projet comprend :
 - TODO et dette technique
 
 **Limitations :**
-- C'est de l'analyse statique basique (grep amélioré, en gros)
+- C'est de l'analyse statique basique (un grep amélioré)
 - Pas mal de faux positifs possibles
-- Ne détecte que ce qu'il connaît (pas de ML ou analyse sémantique)
-- Le scan réseau est juste une structure vide pour l'instant
-
-## Architecture POO
-
-Le projet utilise 3 design patterns pour rendre le code modulaire et extensible.
 
 ### 1. Strategy Pattern
 
-Permet de choisir l'algorithme de scan à la volée. Pour l'instant, y'a que FileScan qui est vraiment implémenté.
+Permet de choisir l'algorithme de scan à la volée. Pour l'instant, il n'y a que FileScan qui est vraiment implémenté.
 
 ```python
 # Dans Scanner
@@ -98,7 +90,7 @@ source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-Si tu veux tester rapidement :
+Si on veut tester rapidement :
 ```bash
 python setup_test.py  # Génère des fichiers de test avec des vulnérabilités
 ```
@@ -111,27 +103,27 @@ python setup_test.py  # Génère des fichiers de test avec des vulnérabilités
 python main.py
 ```
 
-Ouvre ton navigateur sur `http://127.0.0.1:5000`
+Ouvrir son navigateur sur `http://127.0.0.1:5000`
 
 ### Interface web
 
 1. **Configurer le scan**
-   - Entre le chemin absolu du dossier à analyser (ex: `/home/user/mon_projet`)
-   - Clique sur "Charger"
+   - Entrer le chemin absolu du dossier à analyser (ex: `/home/user/mon_projet`)
+   - Cliquer sur "Charger"
 
 2. **Lancer un scan**
-   - Clique sur "Analyser" pour un scan manuel
-   - Ou active le "Mode Veille" pour une surveillance continue (toutes les 60s)
+   - Cliquer sur "Analyser" pour un scan manuel
+   - Ou activer le "Mode Veille" pour une surveillance continue (toutes les minutes)
 
 3. **Voir les résultats**
    - Les stats s'affichent en temps réel
-   - Clique sur une vulnérabilité pour voir les détails
+   - Cliquer sur une vulnérabilité pour voir les détails
    - Export PDF disponible après le scan
 
 ### Exemple de chemin valide
 ```
 # Linux
-/home/shaadi/Documents/projet_web
+/home/ygp4ph/Projets/projet_web
 
 # Windows  
 C:\Users\Shaadi\Documents\projet_web
@@ -180,24 +172,6 @@ MagicSIEM/
 | `TODO` | 30 | Dette technique |
 
 Avec le contexte "Production", +20 points de sévérité.
-
-## Stack technique
-
-- Python 3.8+
-- Flask 3.1.2 (serveur web)
-- fpdf 1.7.2 (génération PDF)
-- HTML/CSS/JavaScript vanilla (interface)
-
-## Contexte
-
-Projet réalisé en B2 Cybersécurité à Ynov Campus Bordeaux (2024-2025). L'objectif était de mettre en pratique les design patterns orientés objet vus en cours tout en créant un outil fonctionnel d'analyse de sécurité.
-
-## Notes
-
-- C'est un projet académique, pas un outil de production
-- L'analyse est basique (recherche de patterns textuels)
-- Le scan réseau n'est pas implémenté (juste la structure)
-- Pas d'authentification (local only)
 
 ---
 
