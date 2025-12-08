@@ -6,13 +6,18 @@ venv/
 */venv/
 
 # ----------------------------------------------------
-# 2. Fichiers et Dossiers générés par Python
+# 2. Fichiers et Dossiers générés par Python (CACHE)
 # ----------------------------------------------------
-# Fichiers Bytecode
+# Ignore tous les dossiers __pycache__ à n'importe quel niveau
 __pycache__/
+
+# Ignore tous les fichiers bytecode (.pyc)
 *.pyc
 
-# Builds
+# Ignore l'historique de la console Python (si vous l'utilisez)
+.python_history
+
+# Builds et distributions
 dist/
 build/
 *.egg-info/
@@ -25,12 +30,12 @@ build/
 *.sqlite
 *.db
 
-# Fichiers d'environnement local pour secrets (s'ils existent)
+# Fichiers d'environnement local pour secrets
 .env
 .flaskenv
 
 # ----------------------------------------------------
-# 4. Fichiers générés par l'IDE (ex: VS Code, PyCharm)
+# 4. Fichiers générés par l'IDE
 # ----------------------------------------------------
 .idea/
 .vscode/
@@ -38,13 +43,8 @@ build/
 *~
 
 # ----------------------------------------------------
-# 5. Fichiers Spécifiques à votre structure
+# 5. Fichiers Spécifiques
 # ----------------------------------------------------
-# Dossier des tests si les résultats des tests y sont stockés
-tests/__pycache__/
-
 # Dossier d'un projet de test généré ou temporaire
-# test_data/  # Si 'test_data' ne contient que des fichiers de test jetables
-
-# Fichiers de présentation/documentation s'ils sont volumineux ou non cruciaux pour le code
-# GUIDE_PRESENTATION.md # Décommenter si vous ne voulez pas le versionner
+# Si test_data ne contient que des fichiers de test jetables, vous pouvez l'ignorer
+# test_data/
