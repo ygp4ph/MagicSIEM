@@ -14,6 +14,11 @@ class VulnDecorator(Vulnerability):
     def get_remediation(self):
         return self.wrapped.get_remediation()
 
+    # --- CORRECTION ICI ---
+    # Permet d'accéder à .detail et .solution à travers le décorateur
+    def __getattr__(self, name):
+        return getattr(self.wrapped, name)
+
 
 class CriticalContextDecorator(VulnDecorator):
     
@@ -22,7 +27,8 @@ class CriticalContextDecorator(VulnDecorator):
         self.reason = reason
     
     def get_severity(self):
-        return self.wrapped.get_severity() + 20
+        # On plafonne à 100 pour éviter des scores de 120
+        return min(100, self.wrapped.get_severity() + 20)
     
     def get_title(self):
         return f"{self.wrapped.get_title()} [CRITIQUE: {self.reason}]"
