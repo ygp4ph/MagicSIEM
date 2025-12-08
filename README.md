@@ -25,6 +25,7 @@ Le projet comprend :
 **Limitations :**
 - C'est de l'analyse statique basique (un grep amélioré)
 - Pas mal de faux positifs possibles
+- les 
 
 ### 1. Strategy Pattern
 
@@ -39,7 +40,6 @@ scanner.run_scan()
 Structure :
 - `IScanStrategy` : interface abstraite avec une méthode scan()
 - `FileScan` : implémentation pour scanner des fichiers
-- `NetworkScan` : structure vide pour plus tard
 
 ### 2. Observer Pattern
 
