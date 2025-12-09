@@ -92,19 +92,7 @@ Ouvrir son navigateur sur `http://127.0.0.1:5000`
 
 ### Interface web
 
-1. **Configurer le scan**
-   - Entrer le chemin absolu du dossier à analyser (ex: `/home/user/mon_projet`)
-   - Cliquer sur "Charger"
-
-2. **Lancer un scan**
-   - Cliquer sur "Analyser" pour un scan manuel
-   - Ou activer le "Mode Veille" pour une surveillance continue (toutes les minutes)
-
-3. **Voir les résultats**
-   - Les stats s'affichent en temps réel
-   - Cliquer sur une vulnérabilité pour voir les détails
-   - Export PDF disponible après le scan
-
+![Dashboard](screenshots/capture-2025-12-09_09-33-25.png)
 ### Exemple de chemin valide
 ```
 # Linux
@@ -116,45 +104,68 @@ C:\Users\Shaadi\Documents\projet_web
 
 Note : Le chemin doit être absolu (commençant par / ou C:\)
 
+
+## Vulnérabilités détectées
+
+### Critiques (90-100)
+
+| Pattern | Sévérité | Description |
+|---------|----------|-------------|
+| `exec(` | 100 | Exécution de code arbitraire |
+| `eval(` | 100 | Évaluation de code dynamique |
+| `password` | 95 | Mot de passe en clair |
+| `api_key` | 90 | Clé API exposée |
+
+### Hautes (70-89)
+
+| Pattern | Sévérité | Description |
+|---------|----------|-------------|
+| `sqli` | 85 | Injection SQL potentielle |
+| `shell_exec(` | 80 | Exécution de commande système (PHP) |
+| `xss` | 75 | Cross-Site Scripting potentiel |
+| `subprocess.call(` | 70 | Appel système non sécurisé (Python) |
+
+### Moyennes (50-69)
+
+| Pattern | Sévérité | Description |
+|---------|----------|-------------|
+| `debug` | 60 | Mode debug activé |
+| `http` | 55 | Communication non chiffrée |
+| `console.log(` | 50 | Information divulguée en console |
+
+### Basses (<50)
+
+| Pattern | Sévérité | Description |
+|---------|----------|-------------|
+| `FIXME` | 45 | Dette technique à corriger |
+| `TODO` | 30 | Tâche en attente |
+
+### Résultats d'annalyse
+![Dashboard](screenshots/capture-2025-12-09_09-34-59.png)
 ## Structure du projet
 
 ```
 MagicSIEM/
+├── main.py                   # Application Flask et routes API
+├── requirements.txt          # Dépendances Python
+├── setup_test.py            # Générateur de fichiers de test
 │
-├── main.py                    # Application Flask + routes API
-├── requirements.txt           
-├── setup_test.py             # Génère des fichiers de test
+├── core/                    # Composants principaux
+│   ├── scanner.py           # Orchestrateur du scan
+│   ├── alert_system.py      # Système d'alertes (Observer)
+│   ├── vulnerability.py     # Classes de vulnérabilités
+│   └── database.py          # Base de données des vulnérabilités
 │
-├── core/                     
-│   ├── scanner.py            # Orchestration du scan
-│   ├── alert_system.py       # Observer pattern
-│   └── database.py           # Base des vulnérabilités connues
+├── strategies/              # Implémentations Strategy
+│   ├── scan_strategy.py     # Interface Strategy
+│   └── file_scan.py         # Scan de fichiers
 │
-├── strategies/               
-│   ├── scan_strategy.py      # Interface Strategy
-│   ├── file_scan.py          # Scan de fichiers (implémenté)
-│   └── network_scan.py       # Scan réseau (structure vide)
+├── static/                  # Ressources statiques
+│   └── style.css           # Styles du dashboard
 │
-├── vulnerabilities/          
-│   ├── vulnerability.py      # Classes de base
-│   └── decorators.py         # Decorator pattern
-│
-└── templates/                
-    └── index.html            # Dashboard web
+└── templates/               # Templates HTML
+    └── index.html          # Interface web
 ```
-
-## Vulnérabilités détectées
-
-| Pattern | Sévérité de base | Description |
-|---------|------------------|-------------|
-| `eval(` | 100 | Fonction dangereuse |
-| `password` | 95 | Mot de passe en clair |
-| `api_key` | 90 | Clé API exposée |
-| `sqli` | 85 | Injection SQL |
-| `xss` | 75 | XSS potentiel |
-| `debug` | 60 | Mode debug |
-| `http` | 55 | HTTP non sécurisé |
-| `TODO` | 30 | Dette technique |
 
 Avec le contexte "Production", +20 points de sévérité.
 
