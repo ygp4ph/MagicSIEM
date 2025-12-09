@@ -11,7 +11,14 @@ class FileScan(IScanStrategy):
     
     def scan(self):
         findings = []
-        patterns = ['password', 'api_key', 'eval(', 'sqli', 'xss', 'http', 'debug', 'TODO']
+        # --- LISTE FINALE DES 13 PATTERNS ---
+        patterns = [
+            'password', 'api_key',           # Secrets (2)
+            'eval(', 'exec(', 'subprocess.call(', 'shell_exec(', # Exécution de commandes (4)
+            'sqli', 'xss',                   # Vulnérabilités Web (2)
+            'http', 'debug', 'console.log(', # Configurations/Fuites (3)
+            'TODO', 'FIXME'                  # Dette Technique (2)
+        ]
         
         if not os.path.exists(self.root_dir):
             return []
@@ -24,11 +31,11 @@ class FileScan(IScanStrategy):
                         with open(path, 'r', errors='ignore') as f:
                             for i, line in enumerate(f, 1):
                                 for pat in patterns:
+                                    # Si le pattern est trouvé dans la ligne
                                     if pat in line:
                                         info = VulnerabilityDB.get_vuln(pat)
                                         
-                                        # --- MODIFICATION ICI ---
-                                        # Format: <faille> trouvé dans <fichier> à la ligne <ligne>
+                                        # Format: <description> trouvé dans <fichier> à la ligne <ligne>
                                         titre_formate = f"{info['desc']} trouvé dans {filename} à la ligne {i}"
                                         
                                         vuln = BasicVulnerability(
