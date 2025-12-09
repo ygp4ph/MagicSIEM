@@ -1,6 +1,6 @@
 import os
 from strategies.scan_strategy import IScanStrategy
-from vulnerabilities.vulnerability import BasicVulnerability
+from core.vulnerability import BasicVulnerability
 from core.database import VulnerabilityDB
 
 class FileScan(IScanStrategy):
