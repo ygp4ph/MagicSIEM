@@ -7,11 +7,10 @@ from fpdf import FPDF
 from concurrent.futures import ThreadPoolExecutor
 from core.scanner import Scanner
 from strategies.file_scan import FileScan
-from vulnerabilities.vulnerability import BasicVulnerability
+from core.vulnerability import BasicVulnerability
 
-# --- CONFIGURATION GLOBALE ---
 SCAN_CONFIG = {
-    "directory": "",           # Vide par défaut
+    "directory": "/home/ygp4ph/Projets/mini-SIEM/test_data",
     "interval": 60,            # Intervalle de veille (1 minute)
     "monitoring_active": False # État du mode veille
 }
@@ -59,7 +58,6 @@ def monitoring_task():
                     # Exécution du scan silencieux
                     SCANNER.reset()
                     SCANNER.set_strategy(FileScan(target_dir, [".py", ".txt", ".md", ".js", ".php"]))
-                    SCANNER.add_critical_context("Production") 
                     SCANNER.run_scan()
                     print(f"--- [VEILLE] Analyse terminée ({len(SCANNER.findings)} résultats) ---")
 
@@ -71,49 +69,34 @@ monitor_thread.start()
 
 
 # --- TÂCHE : SCAN MANUEL (ASYNC) ---
-def execute_manual_scan(target_input):
+
+def execute_manual_scan(target_dir):
     global SCAN_STATUS
     try:
-        SCANNER.reset()
-        
-        # DÉTECTION INTELLIGENTE : IP vs DOSSIER
-        # Regex simple pour IPv4
-        ip_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-        
-        if ip_pattern.match(target_input) or target_input == "localhost":
-            # --- MODE RÉSEAU ---
-            print(f"--- [RESEAU] Scan démarré sur l'IP {target_input} ---")
-            SCANNER.set_strategy(NetworkScan(target_input))
-            # On n'ajoute PAS le contexte 'Production' pour le réseau, ou alors un autre contexte
-            SCANNER.add_critical_context("Infrastructure") 
-
-        elif os.path.exists(target_input) and os.path.isabs(target_input):
-            # --- MODE FICHIER ---
-            print(f"--- [FICHIER] Scan démarré sur le dossier {target_input} ---")
-            SCANNER.set_strategy(FileScan(target_input, [".py", ".txt", ".md", ".js", ".php"]))
-            SCANNER.add_critical_context("Production")
-            
-        else:
-            # ERREUR
+        # Validation stricte : on vérifie juste si le dossier existe
+        if not os.path.exists(target_dir):
+            SCANNER.reset()
             sys_alert = BasicVulnerability(
-                f"Cible invalide", 
-                100,
-                detail=f"La cible '{target_input}' n'est ni une IP valide, ni un dossier absolu existant.",
-                solution="Vérifiez la saisie."
+                f"ERREUR CRITIQUE: Dossier introuvable", 
+                100, 
+                detail=f"Chemin {target_dir} inaccessible ou inexistant.", 
+                solution="Vérifiez le chemin absolu saisi."
             )
             SCANNER.findings.append(sys_alert)
             SCAN_STATUS = "error"
             return
-
-        # Lancement commun
+            
+        # Préparation du scan fichier uniquement
+        SCANNER.reset()
+        SCANNER.set_strategy(FileScan(target_dir, [".py", ".txt", ".md", ".js", ".php"]))
+        
+        print(f"--- [MANUEL] Scan fichier démarré sur {target_dir} ---")
         SCANNER.run_scan()
-        print("--- [SCAN] Analyse terminée ---")
         SCAN_STATUS = "idle"
 
     except Exception as e:
         SCAN_STATUS = "error"
-        logging.error(f"Erreur scan: {e}")
-
+        logging.error(f"Erreur scan manuel: {e}")
 # --- ROUTES FLASK ---
 
 @app.route('/')
@@ -143,7 +126,6 @@ def launch_scan():
     if SCAN_STATUS == "running":
         return jsonify({"status": "warning", "message": "Scan déjà en cours."}), 200
 
-    # Lancement asynchrone
     SCAN_STATUS = "running"
     executor.submit(execute_manual_scan, target_dir)
     return jsonify({"status": "running", "message": "Scan lancé."})
@@ -168,7 +150,6 @@ def get_data():
     stats = SCANNER.get_stats()
     logs = []
     for v in SCANNER.findings:
-        # Récupération sécurisée des attributs dynamiques
         detail = getattr(v, 'detail', 'Pas de détail disponible')
         sol = getattr(v, 'solution', 'Pas de solution disponible')
         logs.append({
@@ -177,7 +158,6 @@ def get_data():
             "detail": detail,
             "sol": sol
         })
-    # On renvoie les 50 derniers logs
     return jsonify({"stats": stats, "logs": logs[-50:]})
 
 @app.route('/download/pdf')
@@ -198,7 +178,6 @@ def download_pdf():
     
     pdf.set_font("Arial", size=9)
     for v in SCANNER.findings:
-        # Code couleur texte simple pour le PDF
         prefix = "[CRITIQUE]" if v.get_severity() >= 90 else "[INFO]"
         pdf.cell(0, 8, txt=f"{prefix} {v.get_title()} (Score: {v.get_severity()})", ln=1)
         

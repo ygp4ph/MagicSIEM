@@ -10,7 +10,7 @@ Le projet comprend :
 - Un mode surveillance qui tourne en arrière-plan
 - L'export des résultats en PDF
 
-## Ce que ça fait (et ce que ça ne fait pas)
+## Ce que ça fait
 
 **Ce que ça détecte :**
 - Mots de passe en dur dans le code
@@ -21,11 +21,6 @@ Le projet comprend :
 - Connexions HTTP non sécurisées
 - Mode debug activé
 - TODO et dette technique
-
-**Limitations :**
-- C'est de l'analyse statique basique (un grep amélioré)
-- Pas mal de faux positifs possibles
-- les 
 
 ### 1. Strategy Pattern
 
@@ -50,16 +45,6 @@ Le système d'alertes reçoit automatiquement une notification quand le scanner 
 for vuln in raw_results:
     self.findings.append(vuln)
     self.alert_system.send_alert(vuln)  # Notif automatique
-```
-
-### 3. Decorator Pattern
-
-Modifie la sévérité d'une vulnérabilité selon le contexte (Production, Public, etc.). Une XSS à 75 en dev devient 95 en prod.
-
-```python
-vuln = BasicVulnerability("XSS détecté", 75)
-decorated = CriticalContextDecorator(vuln, "Production")
-# Sévérité passe à 95 (75 + 20)
 ```
 
 ### Organisation générale
