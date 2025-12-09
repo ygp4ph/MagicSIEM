@@ -10,7 +10,7 @@ from strategies.file_scan import FileScan
 from core.vulnerability import BasicVulnerability
 
 SCAN_CONFIG = {
-    "directory": "/home/ygp4ph/Projets/mini-SIEM/test_data",
+    "directory": "/home/ygp4ph/Projets/MagicSIEM/test_data",
     "interval": 60,            # Intervalle de veille (1 minute)
     "monitoring_active": False # État du mode veille
 }
@@ -160,27 +160,79 @@ def get_data():
         })
     return jsonify({"stats": stats, "logs": logs[-50:]})
 
+R_CRITIQUE, G_CRITIQUE, B_CRITIQUE = 255, 71, 87     # Rouge
+R_HAUTE, G_HAUTE, B_HAUTE = 255, 165, 2             # Orange
+R_INFO, G_INFO, B_INFO = 186, 227, 100               # Vert Clair (Accent)
+
 @app.route('/download/pdf')
 def download_pdf():
     pdf = FPDF()
     pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt="Rapport de Securite - MagicSIEM", ln=1, align='C')
-    pdf.ln(10)
+    
+    # TITRE PRINCIPAL
+    pdf.set_font("Arial", 'BU', size=16)
+    pdf.cell(0, 15, txt="RAPPORT D'ANALYSE MAGICSIEM", ln=1, align='C')
+    pdf.ln(5)
     
     stats = SCANNER.get_stats()
     target = SCAN_CONFIG['directory'] if SCAN_CONFIG['directory'] else "Non défini"
     
+    # SECTION STATS
+    pdf.set_fill_color(220, 220, 220)
     pdf.set_font("Arial", 'B', size=10)
-    pdf.cell(200, 10, txt=f"Cible : {target}", ln=1)
-    pdf.cell(200, 10, txt=f"Total Vulnérabilités : {stats['count']}", ln=1)
-    pdf.ln(5)
+    pdf.cell(0, 7, txt=f"Cible analysée : {target}", ln=1)
+    pdf.cell(0, 7, txt=f"Total Vulnérabilités trouvées : {stats['count']}", ln=1)
+    pdf.ln(10)
     
-    pdf.set_font("Arial", size=9)
-    for v in SCANNER.findings:
-        prefix = "[CRITIQUE]" if v.get_severity() >= 90 else "[INFO]"
-        pdf.cell(0, 8, txt=f"{prefix} {v.get_title()} (Score: {v.get_severity()})", ln=1)
+    # TITRE DE LA SECTION VULNÉRABILITÉS
+    pdf.set_font("Arial", 'B', size=12)
+    pdf.cell(0, 10, txt="DÉTAILS DES VULNÉRABILITÉS :", ln=1, align='L')
+    
+    # BOUCLE SUR LES VULNÉRABILITÉS
+    for i, v in enumerate(SCANNER.findings, 1):
         
+        score = v.get_severity()
+        
+        # Détermination des couleurs et du préfixe
+        if score >= 90:
+            prefix = "CRITIQUE"
+            pdf.set_fill_color(R_CRITIQUE, G_CRITIQUE, B_CRITIQUE)
+            pdf.set_text_color(255, 255, 255) # Texte blanc
+        elif score >= 70:
+            prefix = "HAUTE"
+            pdf.set_fill_color(R_HAUTE, G_HAUTE, B_HAUTE)
+            pdf.set_text_color(0, 0, 0) # Texte noir
+        else:
+            prefix = "INFORMATION / AUTRE"
+            pdf.set_fill_color(R_INFO, G_INFO, B_INFO)
+            pdf.set_text_color(0, 0, 0) # Texte noir
+
+        # Bannière colorée (titre et sévérité)
+        pdf.set_font("Arial", 'B', size=10)
+        # 0.5 est l'épaisseur de la ligne
+        pdf.cell(0, 6, txt=f" {i}. {v.get_title()} | Score: {score}", ln=1, fill=True) 
+        
+        # Réinitialisation du style du texte pour les détails
+        pdf.set_text_color(0, 0, 0) # Texte noir
+        pdf.set_font("Arial", size=9)
+        pdf.ln(1)
+
+        # 1. PROBLÈME (DÉTAIL)
+        pdf.set_font("Arial", 'B', size=9)
+        pdf.cell(0, 5, txt="PROBLÈME DÉTECTÉ :", ln=1)
+        pdf.set_font("Arial", size=9)
+        pdf.multi_cell(0, 4, txt=f"{getattr(v, 'detail', 'Détail non fourni.')}")
+        
+        # 2. SOLUTION
+        pdf.ln(2)
+        pdf.set_font("Arial", 'B', size=9)
+        pdf.cell(0, 5, txt="SOLUTION / REMÉDIATION :", ln=1)
+        pdf.set_font("Arial", size=9)
+        pdf.multi_cell(0, 4, txt=f"{getattr(v, 'solution', 'Solution non fournie.')}")
+        
+        pdf.ln(5) # Espace avant la vulnérabilité suivante
+        
+    # ENVOI DE LA RÉPONSE
     response = make_response(pdf.output(dest='S').encode('latin-1'))
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = 'attachment; filename=rapport_siem.pdf'
